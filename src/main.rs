@@ -3,10 +3,10 @@ use findit::CliArgs;
 use std::process;
 
 mod helper;
-use helper::panic;
+use helper::middlewares;
 
 fn main() {
-  panic::human_readable_panic();
+  middlewares::human_readable_panic();
 
   let args = CliArgs::parse();
 
