@@ -1,4 +1,7 @@
 use clap::Parser;
+use helper::strings;
+
+mod helper;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -19,27 +22,34 @@ pub struct CliArgs {
   #[arg(short, long)]
   #[arg(num_args(0..))]
   filetype: Option<Vec<String>>,
+  #[arg(short, long)]
+  #[arg(num_args(0..))]
+  exact: Option<Vec<String>>,
 }
 
+#[derive(Debug)]
 struct Search {
   search: String,
   intitle: String,
   filetype: String,
   site: String,
+  exact: String,
 }
 
 impl Search {
   fn new(args: CliArgs) -> Self {
     let search = Self::process_option(args.search, "", " ");
-    let intitle = Self::process_option(args.intitle, "intitle:", ",");
+    let intitle = Self::process_option(args.intitle, "intitle:", " OR intitle:");
     let site = Self::process_option(args.site, "site:", " OR site:");
-    let filetype = Self::process_option(args.filetype, "filetype:", ",");
+    let filetype = Self::process_option(args.filetype, "filetype:", " OR filetype:");
+    let exact = strings::format::format_exact_search(Self::process_option(args.exact, "", "%"));
 
     Self {
       search,
       intitle,
       site,
       filetype,
+      exact,
     }
   }
 
@@ -47,10 +57,9 @@ impl Search {
     option
       .map(|s| {
         if !s.is_empty() {
-          format!("{}{}", prefix, s.join(separator))
-        } else {
-          String::from("")
+          return format!("{}{}", prefix, s.join(separator));
         }
+        String::new()
       })
       .unwrap_or_else(String::new)
   }
@@ -58,9 +67,12 @@ impl Search {
 
 pub fn run(args: CliArgs) -> Result<String, &'static str> {
   let s = Search::new(args);
-  let search_string = format!("{} {} {} {}", s.search, s.intitle, s.site, s.filetype)
-    .trim()
-    .replace(" ", "+");
+  let search_string = format!(
+    "{} {} {} {} {}",
+    s.exact, s.search, s.intitle, s.site, s.filetype
+  )
+  .trim()
+  .replace(" ", "+");
 
   if search_string.is_empty() {
     return Err("No search terms provided. See `findit --help` for more information.");
@@ -75,31 +87,36 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_works() {
+  fn intitle() {
     let result = run(CliArgs::parse_from(&[
-      "findit",
+      "findit", // first parameter is name of the program
       "-k",
-      "rust",
-      "python",
+      "Lambda lifting",
       "-i",
-      "rust",
-      "python",
-      "-s",
-      "github.com",
-      "gitlab.com",
-      "-f",
-      "pdf",
-      "epub",
+      "lambda",
+      "lifting",
+      "church",
     ]));
 
+    let expect = "https://www.google.com/search?q=Lambda+lifting+intitle:lambda+OR+intitle:lifting+OR+intitle:church";
+
     match result {
-      Ok(search_uri) => {
-        assert_eq!(
-            search_uri,
-            "https://www.google.com/search?q=rust+python+intitle:rust,python+site:github.com+OR+site:gitlab.com+filetype:pdf,epub"
-          );
-      }
-      Err(e) => panic!("Error: {}", e),
+      Ok(search_uri) => assert_eq!(search_uri, expect),
+      Err(error) => panic!("Error: {}", error),
+    }
+  }
+
+  #[test]
+  fn exact_search() {
+    let result = run(CliArgs::parse_from(&[
+      "findit", "-k", "rust", "python", "-e", "while", "for loop",
+    ]));
+
+    let expect = "https://www.google.com/search?q=\"while\"+\"for+loop\"+rust+python";
+
+    match result {
+      Ok(search_uri) => assert_eq!(search_uri, expect),
+      Err(error) => panic!("{}", error),
     }
   }
 }

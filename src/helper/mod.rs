@@ -1,1 +1,2 @@
-pub mod panic;
+pub mod middlewares;
+pub mod strings;
