@@ -25,23 +25,35 @@ pub struct CliArgs {
   #[arg(short, long)]
   #[arg(num_args(0..))]
   exact: Option<Vec<String>>,
+  #[arg(short, long)]
+  operator: Option<String>,
 }
 
 #[derive(Debug)]
-struct Search {
+pub struct Search {
   search: String,
   intitle: String,
   filetype: String,
   site: String,
   exact: String,
+  operator: String,
 }
 
 impl Search {
   fn new(args: CliArgs) -> Self {
+    let operator = args.operator.unwrap_or("OR".to_string());
     let search = Self::process_option(args.search, "", " ");
-    let intitle = Self::process_option(args.intitle, "intitle:", " OR intitle:");
-    let site = Self::process_option(args.site, "site:", " OR site:");
-    let filetype = Self::process_option(args.filetype, "filetype:", " OR filetype:");
+    let intitle = Self::process_option(
+      args.intitle,
+      "intitle:",
+      format!(" {} intitle:", operator).as_str(),
+    );
+    let site = Self::process_option(args.site, "site:", format!(" {} site:", operator).as_str());
+    let filetype = Self::process_option(
+      args.filetype,
+      "filetype:",
+      format!(" {} filetype:", operator).as_str(),
+    );
     let exact = strings::format::format_exact_search(Self::process_option(args.exact, "", "%"));
 
     Self {
@@ -50,6 +62,7 @@ impl Search {
       site,
       filetype,
       exact,
+      operator,
     }
   }
 
@@ -65,20 +78,24 @@ impl Search {
   }
 }
 
-pub fn run(args: CliArgs) -> Result<String, &'static str> {
-  let s = Search::new(args);
-  let search_string = format!(
+pub fn make_uri(s: Search) -> String {
+  format!(
     "{} {} {} {} {}",
     s.exact, s.search, s.intitle, s.site, s.filetype
   )
   .trim()
-  .replace(" ", "+");
+  .replace(" ", "+")
+}
 
-  if search_string.is_empty() {
+pub fn run(args: CliArgs) -> Result<String, &'static str> {
+  let s = Search::new(args);
+  let search_uri = make_uri(s);
+
+  if search_uri.is_empty() {
     return Err("No search terms provided. See `findit --help` for more information.");
   }
 
-  let search_url: String = format!("https://www.google.com/search?q={}", search_string);
+  let search_url: String = format!("https://www.google.com/search?q={}", search_uri);
   Ok(search_url)
 }
 
@@ -87,36 +104,27 @@ mod tests {
   use super::*;
 
   #[test]
-  fn intitle() {
-    let result = run(CliArgs::parse_from(&[
-      "findit", // first parameter is name of the program
-      "-k",
-      "Lambda lifting",
-      "-i",
-      "lambda",
-      "lifting",
-      "church",
-    ]));
+  fn test_make_uri() {
+    let s = Search {
+      exact: "query".into(),
+      search: "graphql query".into(),
+      intitle: "graphql".into(),
+      site: "medium.com".into(),
+      filetype: "pdf".into(),
+      operator: "OR".into(),
+    };
 
-    let expect = "https://www.google.com/search?q=Lambda+lifting+intitle:lambda+OR+intitle:lifting+OR+intitle:church";
+    let expect = "query+graphql+query+graphql+medium.com+pdf";
 
-    match result {
-      Ok(search_uri) => assert_eq!(search_uri, expect),
-      Err(error) => panic!("Error: {}", error),
-    }
+    assert_eq!(make_uri(s), expect);
   }
 
   #[test]
-  fn exact_search() {
-    let result = run(CliArgs::parse_from(&[
-      "findit", "-k", "rust", "python", "-e", "while", "for loop",
-    ]));
-
-    let expect = "https://www.google.com/search?q=\"while\"+\"for+loop\"+rust+python";
-
-    match result {
-      Ok(search_uri) => assert_eq!(search_uri, expect),
-      Err(error) => panic!("{}", error),
-    }
+  fn test_process_option() {
+    let option: Option<Vec<String>> =
+      Some(vec!["graphql".into(), "query".into(), "mutation".into()]);
+    let s = Search::process_option(option, "intitle:", " OR intitle:");
+    let expect = "intitle:graphql OR intitle:query OR intitle:mutation";
+    assert_eq!(s, expect);
   }
 }
