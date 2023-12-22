@@ -1,6 +1,5 @@
 use clap::Parser;
 use helper::strings;
-use std::process;
 
 mod helper;
 
@@ -100,13 +99,13 @@ fn system_os() -> String {
 }
 
 pub fn open_uri(uri: String) {
-  process::Command::new(system_os())
+  std::process::Command::new(system_os())
     .arg(&uri)
     .output()
     .expect(
       format!(
         "[FAIL_TO_OPEN_URI]: sorry, isn't possible open the uri: {}",
-        uri
+        &uri
       )
       .as_str(),
     );
