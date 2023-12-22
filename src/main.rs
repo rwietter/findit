@@ -13,8 +13,9 @@ fn main() {
   match findit::run(args) {
     Ok(search_uri) => {
       println!("{}", search_uri);
+      findit::open_uri(search_uri);
       process::exit(0)
     }
-    Err(error) => eprintln!("{error}"),
+    Err(error) => eprintln!("{}", error),
   }
 }

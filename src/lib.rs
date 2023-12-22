@@ -1,5 +1,6 @@
 use clap::Parser;
 use helper::strings;
+use std::process;
 
 mod helper;
 
@@ -85,6 +86,30 @@ pub fn make_uri(s: Search) -> String {
   )
   .trim()
   .replace(" ", "+")
+}
+
+fn system_os() -> String {
+  let os = std::env::consts::OS;
+  println!("OS: {}", os);
+  match os {
+    "linux" => "xdg-open".into(),
+    "macos" => "open".into(),
+    "windows" => "start".into(),
+    _ => "xdg-open".into(),
+  }
+}
+
+pub fn open_uri(uri: String) {
+  process::Command::new(system_os())
+    .arg(&uri)
+    .output()
+    .expect(
+      format!(
+        "[FAIL_TO_OPEN_URI]: sorry, isn't possible open the uri: {}",
+        uri
+      )
+      .as_str(),
+    );
 }
 
 pub fn run(args: CliArgs) -> Result<String, &'static str> {
