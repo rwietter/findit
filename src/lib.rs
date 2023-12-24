@@ -1,43 +1,11 @@
-use clap::Parser;
-use helper::strings;
+use helper::strings::format;
 
-mod helper;
+pub mod config;
+pub mod helper;
+pub mod system;
+pub mod uri;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-#[command(author = "Maurício W. <mauriciobw17@gmail.com>")]
-#[command(version = "1.0")]
-#[command(about = "Advanced web search", long_about = None)]
-#[command(ignore_errors = true)]
-pub struct CliArgs {
-  #[arg(short = 'k', long)]
-  #[arg(num_args(0..))]
-  search: Option<Vec<String>>,
-  #[arg(short, long)]
-  #[arg(num_args(0..))]
-  intitle: Option<Vec<String>>,
-  #[arg(num_args(0..))]
-  #[arg(short, long)]
-  site: Option<Vec<String>>,
-  #[arg(short, long)]
-  #[arg(num_args(0..))]
-  filetype: Option<Vec<String>>,
-  #[arg(short, long)]
-  #[arg(num_args(0..))]
-  exact: Option<Vec<String>>,
-  #[arg(short, long)]
-  operator: Option<String>,
-}
-
-#[derive(Debug)]
-pub struct Search {
-  search: String,
-  intitle: String,
-  filetype: String,
-  site: String,
-  exact: String,
-  operator: String,
-}
+use crate::config::{args::CliArgs, search::Search};
 
 impl Search {
   fn new(args: CliArgs) -> Self {
@@ -54,7 +22,7 @@ impl Search {
       "filetype:",
       format!(" {} filetype:", operator).as_str(),
     );
-    let exact = strings::format::format_exact_search(Self::process_option(args.exact, "", "%"));
+    let exact = format::format_exact_search(Self::process_option(args.exact, "", "%"));
 
     Self {
       search,
@@ -78,42 +46,9 @@ impl Search {
   }
 }
 
-pub fn make_uri(s: Search) -> String {
-  format!(
-    "{} {} {} {} {}",
-    s.exact, s.search, s.intitle, s.site, s.filetype
-  )
-  .trim()
-  .replace(" ", "+")
-}
-
-fn system_os() -> String {
-  let os = std::env::consts::OS;
-  println!("OS: {}", os);
-  match os {
-    "linux" => "xdg-open".into(),
-    "macos" => "open".into(),
-    "windows" => "start".into(),
-    _ => "xdg-open".into(),
-  }
-}
-
-pub fn open_uri(uri: String) {
-  std::process::Command::new(system_os())
-    .arg(&uri)
-    .output()
-    .expect(
-      format!(
-        "[FAIL_TO_OPEN_URI]: sorry, isn't possible open the uri: {}",
-        &uri
-      )
-      .as_str(),
-    );
-}
-
 pub fn run(args: CliArgs) -> Result<String, &'static str> {
   let s = Search::new(args);
-  let search_uri = make_uri(s);
+  let search_uri = uri::make_uri(s);
 
   if search_uri.is_empty() {
     return Err("No search terms provided. See `findit --help` for more information.");
@@ -140,7 +75,7 @@ mod tests {
 
     let expect = "query+graphql+query+graphql+medium.com+pdf";
 
-    assert_eq!(make_uri(s), expect);
+    assert_eq!(uri::make_uri(s), expect);
   }
 
   #[test]
