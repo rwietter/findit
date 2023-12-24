@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub mod format {
   pub fn format_exact_search(exact: String) -> String {
     exact

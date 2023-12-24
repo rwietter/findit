@@ -1,6 +1,6 @@
 use clap::Parser;
+use findit::config::args::CliArgs;
 use findit::run;
-use findit::CliArgs;
 
 mod common;
 
