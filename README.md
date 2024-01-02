@@ -1,8 +1,10 @@
 # findit
 
-Findit is a command line tool that allows you to search google using advanced search operators.
+Findit is a command-line tool that leverages Google's advanced search operators to refine your search results. It is built in Rust and provides a simple and intuitive interface for performing complex searches. 
 
 ## The Search Operators
+
+Findit uses a variety of search operators to refine your search results. Here is a brief description of each operator:
 
 | Search Operator | Description                                   |
 | --------------- | --------------------------------------------- |
