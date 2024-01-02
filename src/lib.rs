@@ -1,4 +1,5 @@
 use helper::strings::format;
+use uri::engine;
 
 pub mod config;
 pub mod helper;
@@ -53,15 +54,15 @@ impl Search {
 }
 
 pub fn run(args: CliArgs) -> Result<String, &'static str> {
-  let s = Search::new(args);
-  let search_uri = uri::make_uri(s);
+  let engine = args.engine.clone();
+  let uri_args = Search::new(args);
+  let search_uri = uri::make_uri(uri_args);
 
   if search_uri.is_empty() {
     return Err("No search terms provided. See `findit --help` for more information.");
   }
 
-  let search_url: String = format!("https://www.google.com/search?q={}", search_uri);
-  Ok(search_url)
+  Ok(engine::search_engine(engine, search_uri))
 }
 
 #[cfg(test)]
