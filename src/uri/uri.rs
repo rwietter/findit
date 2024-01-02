@@ -15,10 +15,12 @@ pub fn open_uri(uri: String) {
 }
 
 pub fn make_uri(s: Search) -> String {
-  format!(
-    "{} {} {} {} {}",
-    s.exact, s.search, s.intitle, s.site, s.filetype
-  )
-  .trim()
-  .replace(" ", "+")
+  let values = vec![s.exact, s.search, s.intitle, s.site, s.filetype, s.inurl];
+
+  values
+    .iter()
+    .filter(|value| !value.is_empty())
+    .map(|value| value.replace(" ", "+"))
+    .collect::<Vec<String>>()
+    .join("+")
 }

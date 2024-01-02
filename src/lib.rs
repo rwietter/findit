@@ -23,6 +23,11 @@ impl Search {
       format!(" {} filetype:", operator).as_str(),
     );
     let exact = format::format_exact_search(Self::process_option(args.exact, "", "%"));
+    let inurl = Self::process_option(
+      args.inurl,
+      "inurl:",
+      format!(" {} inurl:", operator).as_str(),
+    );
 
     Self {
       search,
@@ -31,6 +36,7 @@ impl Search {
       filetype,
       exact,
       operator,
+      inurl,
     }
   }
 
@@ -71,9 +77,10 @@ mod tests {
       site: "medium.com".into(),
       filetype: "pdf".into(),
       operator: "OR".into(),
+      inurl: "graphql".into(),
     };
 
-    let expect = "query+graphql+query+graphql+medium.com+pdf";
+    let expect = "query+graphql+query+graphql+medium.com+pdf+graphql";
 
     assert_eq!(uri::make_uri(s), expect);
   }

@@ -6,4 +6,5 @@ pub struct Search {
   pub site: String,
   pub exact: String,
   pub operator: String,
+  pub inurl: String,
 }

@@ -10,7 +10,7 @@ pub struct CliArgs {
   #[arg(short = 'k', long)]
   #[arg(num_args(0..))]
   pub search: Option<Vec<String>>,
-  #[arg(short, long)]
+  #[arg(short = 't', long)]
   #[arg(num_args(0..))]
   pub intitle: Option<Vec<String>>,
   #[arg(num_args(0..))]
@@ -24,4 +24,7 @@ pub struct CliArgs {
   pub exact: Option<Vec<String>>,
   #[arg(short, long)]
   pub operator: Option<String>,
+  #[arg(short, long)]
+  #[arg(num_args(0..))]
+  pub inurl: Option<Vec<String>>,
 }
