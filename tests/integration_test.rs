@@ -5,12 +5,12 @@ use findit::run;
 mod common;
 
 #[test]
-fn intitle() {
+fn test_intitle() {
   let result = run(CliArgs::parse_from(&[
     "findit", // first parameter is name of the program
     "-k",
     "Lambda lifting",
-    "-i",
+    "-t",
     "lambda",
     "lifting",
     "church",
@@ -25,7 +25,7 @@ fn intitle() {
 }
 
 #[test]
-fn exact_search() {
+fn test_exact_search() {
   let result = run(CliArgs::parse_from(&[
     "findit", "-k", "rust", "python", "-e", "while", "for loop",
   ]));
@@ -44,9 +44,9 @@ fn test_and_operator() {
     "findit",
     "-k",
     "javascript gc",
-    "-i",
+    "-t",
     "gc",
-    "-i",
+    "-t",
     "gargage collector",
     "-o",
     "AND",
@@ -57,6 +57,28 @@ fn test_and_operator() {
   ]));
 
   let expect = "https://www.google.com/search?q=\"gc\"+javascript+gc+intitle:gc+AND+intitle:gargage+collector+site:medium.com";
+
+  match result {
+    Ok(search_uri) => assert_eq!(search_uri, expect),
+    Err(error) => panic!("{}", error),
+  }
+}
+
+#[test]
+fn test_inurl() {
+  let result = run(CliArgs::parse_from(&[
+    "findit",
+    "-k",
+    "javascript gc",
+    "-i",
+    "gc",
+    "-s",
+    ".medium.com",
+    "-i",
+    "gargage collector",
+  ]));
+
+  let expect = "https://www.google.com/search?q=javascript+gc+site:.medium.com+inurl:gc+OR+inurl:gargage+collector";
 
   match result {
     Ok(search_uri) => assert_eq!(search_uri, expect),
