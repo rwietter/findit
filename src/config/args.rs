@@ -3,7 +3,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about)]
 #[command(author = "Maurício W. <mauriciobw17@gmail.com>")]
-#[command(version = "1.0")]
+#[command(version = "1.0.0")]
 #[command(about = "Findit - A simple tool to advanced search in your browser", long_about = None)]
 #[command(ignore_errors = true)]
 pub struct CliArgs {
