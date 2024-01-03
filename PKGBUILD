@@ -1,9 +1,9 @@
 pkgname=findit
-pkgver=0.0.1
+pkgver=1.0.0
 pkgrel=1
 source=("https://codeload.github.com/rwietter/findit/tar.gz/refs/tags/$pkgver")
 arch=('x86_64')
-sha256sums=('83652f7ad56737fdc8b1ff97376133506a7e978b746b495fa1f08b266a688d6a')
+sha256sums=('463fc8af46ef8ff07d0989d0a67022acca5a2c80965ad3d440d0120c206d6710')
 license=('MIT')
 depends=('rust')
 # validpgpkeys=('')
