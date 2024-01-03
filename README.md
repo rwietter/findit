@@ -33,6 +33,14 @@ cargo build --release
 ./target/release/findit --help
 ```
 
+With make:
+
+```bash
+git clone <repo>
+cd findit
+makepkg -si
+``````
+
 ## Usage
 
 ```bash
